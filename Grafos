@@ -1,0 +1,142 @@
+#include <stdio.h> //Entrada e saída
+#include <stdlib.h> //Aloc dinamica
+
+//struct do grafo com matriz, vertices e arestas
+typedef struct {
+    int **matriz;
+    int vertices;
+    int arestas;
+} Grafo;
+
+//Pilha estatica e sequencial
+typedef struct {
+    int topo;
+    int max;
+    int *elementos;
+}Pilha;
+
+Pilha* criar(int m, int *DeuCerto);
+void destruir(Pilha *p);
+int vazia(Pilha *p);
+int cheia(Pilha *p);
+void empilhar(Pilha *p, int m, int *DeuCerto);
+int desempilhar(Pilha *p);
+int** criaMatriz(int linha, int coluna);
+Grafo* iniciaGrafo(int vert, int arest);
+void encheMatriz(Grafo G, int arestas);
+
+//cria a matriz que representara o grafo
+int** criaMatriz(int linha, int coluna){
+    int **matriz = (int**) malloc(linha * sizeof(int*));
+    for(int i = 0; i<linha; i++){
+        matriz[i] = (int*) malloc(coluna * sizeof(int));
+    }
+    return matriz;
+}
+
+//inicia e aloca memoria do Grafo
+Grafo* iniciaGrafo(int vert, int arest){
+    Grafo *G = (Grafo*) malloc(sizeof(Grafo));
+    G->vertices = vert;
+    G->arestas = arest;
+    G->matriz = criaMatriz(vert, vert);
+    return G;
+}
+
+//preenche a matriz com os valores passados pelo usuario
+void encheMatriz(Grafo G, int arestas){
+    int linhas, colunas, custo;
+    for (int i = 0; i < arestas; ++i) {
+        scanf("%d %d %d", &linhas, &colunas, &custo);
+        G.matriz[linhas-1][colunas-1] = custo;
+        }
+}
+
+void verificaCaminho(Grafo G, int saida, int destino, int tamanho, Pilha *P){
+    int deuCerto;
+    Pilha *p = P;
+    int cont = 9999;
+
+  
+    for(int i=0; i<tamanho; i++){
+      if(G.matriz[i][destino]!=0 && i==saida){
+        empilhar(P, G.matriz[i][destino], &deuCerto);
+        return;
+      }else if(G.matriz[i][destino]!=0 && G.matriz[i][destino]<=cont){
+        cont = G.matriz[i][destino];
+        empilhar(P, G.matriz[i][destino], &deuCerto);
+        verificaCaminho(G, saida, i, tamanho, P);
+      }
+    }
+}
+
+//Criar pilha
+Pilha* criar(int m, int*DeuCerto)
+{
+    Pilha* p;
+    p = (Pilha*) malloc(sizeof(Pilha));
+    if(p==NULL) *DeuCerto = 0;
+    else{
+        p->topo = -1;
+        p->elementos = (int*) malloc(m * sizeof(int));
+        *DeuCerto = 1;
+    }
+
+    return p;
+}
+
+//Destruir pilha
+void destruir(Pilha *p)
+{
+    if(p!= NULL){free(p);}
+}
+
+//Conferir se pilha está vazia
+int vazia(Pilha*p){
+    if (p->topo == -1){return 1;} //Pilha vazia 1==true
+    else return 0; //Pilha não vazia 0==false
+}
+
+//Conferir se a pilha está cheia
+int cheia (Pilha *p){
+    if (p->topo == p->max-1){return 1;} //Pilha cheia 1==true
+    else return 0; //Pilha não cheia 0==false
+}
+
+//Empilhar elementos na pilha
+void empilhar(Pilha *p, int m, int *DeuCerto){
+    if(cheia(p)==1){*DeuCerto = 0;} //Pilha cheia
+    else{ //Pilha nao está cheia
+        p->topo = p->topo+1;
+        p->elementos[p->topo] = m;
+        *DeuCerto = 1;
+    }
+}
+
+//Desempilhar elementos na pilha
+int desempilhar(Pilha *p){
+    int m;
+    m = p->elementos[p->topo];
+    p->elementos = p->elementos -1;
+    return m;
+}
+
+int main(){
+    int arestas, vertices, saida, destino, deuCerto;
+    int s=0, m=0;
+    Grafo *G;
+    Pilha *P;
+
+    scanf("%d", &vertices);
+    scanf("%d", &arestas);
+    G = iniciaGrafo(vertices, arestas);
+    encheMatriz(*G, arestas);
+    P = criar(arestas,&deuCerto);
+    P->max = (arestas);
+    scanf("%d %d", &saida, &destino);
+    verificaCaminho(*G, (saida-1), (destino-1), vertices, P);
+    for (int i = 0; i <= P->topo; ++i) {
+        s += desempilhar(P);
+    }
+    printf("%d", s);
+}
